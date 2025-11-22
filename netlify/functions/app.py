@@ -1,13 +1,12 @@
+import sys
+import os
+
+# Add parent directory to path so we can import app
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
 from app import app
+import serverless_wsgi
 
 def handler(event, context):
     """Netlify serverless function handler."""
-    # Import the serverless WSGI handler
-    try:
-        from serverless_wsgi import handle_request
-        return handle_request(app, event, context)
-    except ImportError:
-        return {
-            'statusCode': 500,
-            'body': 'serverless-wsgi not installed. Add it to requirements.txt'
-        }
+    return serverless_wsgi.handle_request(app, event, context)
