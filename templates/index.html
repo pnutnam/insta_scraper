@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Bio Scraper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: rgba(148, 163, 184, 0.1);
+            --glass: rgba(255, 255, 255, 0.05);
+            --gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border_box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 20%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .search-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        button {
+            background: var(--gradient);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .username {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .bio {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .links-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .links-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .link-group h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .link-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .link-item {
+            background: var(--glass);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            overflow: hidden;
+        }
+
+        .link-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .link-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--glass);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .error-message {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Bio Link Scraper</h1>
+            <p class="subtitle">Extract business websites and social links from Instagram profiles instantly.</p>
+        </header>
+
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="handleInput" placeholder="Enter Instagram handle (e.g. linktr.ee)"
+                    autocomplete="off">
+                <button id="scrapeBtn" onclick="scrapeProfile()">Scrape</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Analyzing profile and resolving links...</p>
+        </div>
+
+        <div id="error" class="error-message"></div>
+
+        <div id="results" class="results-container">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="avatar-placeholder" id="avatarPlaceholder">?</div>
+                    <div class="profile-info">
+                        <h2 id="fullName">Full Name</h2>
+                        <div class="username" id="username">@username</div>
+                    </div>
+                </div>
+
+                <p class="bio" id="bio">Bio text goes here...</p>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="followers">0</span>
+                        <span class="stat-label">Followers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="following">0</span>
+                        <span class="stat-label">Following</span>
+                    </div>
+                </div>
+
+                <!-- New Contact Info Section -->
+                <div id="contactInfo"
+                    style="display:none; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-light);">Contact Information
+                    </h3>
+                    <div class="link-list" id="contactList"></div>
+                </div>
+            </div>
+
+            <div class="links-section">
+                <div class="link-group">
+                    <h3>Website Links</h3>
+                    <div class="link-list" id="websiteLinks">
+                        <!-- Links will be injected here -->
+                    </div>
+                </div>
+
+                <div class="link-group">
+                    <h3>Social Links</h3>
+                    <div class="link-list" id="socialLinks">
+                        <!-- Links will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function scrapeProfile() {
+            const handleInput = document.getElementById('handleInput');
+            const scrapeBtn = document.getElementById('scrapeBtn');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const errorDiv = document.getElementById('error');
+
+            const handle = handleInput.value.trim();
+            if (!handle) return;
+
+            // Reset UI
+            scrapeBtn.disabled = true;
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ handle }),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.data);
+                } else {
+                    showError(data.error || 'Failed to scrape profile');
+                }
+            } catch (err) {
+                showError('Network error occurred. Please try again.');
+                console.error(err);
+            } finally {
+                scrapeBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+
+            // Update Profile Info
+            document.getElementById('fullName').textContent = data.full_name || data.username;
+            document.getElementById('username').textContent = '@' + data.username;
+            document.getElementById('bio').textContent = data.bio || 'No bio available';
+            document.getElementById('followers').textContent = formatNumber(data.followers);
+            document.getElementById('following').textContent = formatNumber(data.following);
+
+            // Avatar Placeholder
+            const initial = (data.full_name || data.username).charAt(0).toUpperCase();
+            document.getElementById('avatarPlaceholder').textContent = initial;
+
+            // Display Contact Info
+            const contactList = document.getElementById('contactList');
+            const contactSection = document.getElementById('contactInfo');
+            contactList.innerHTML = '';
+            let hasContact = false;
+
+            if (data.enriched_data) {
+                const ed = data.enriched_data;
+
+                // Emails
+                if (ed.emails && ed.emails.length > 0) {
+                    ed.emails.forEach(email => {
+                        contactList.appendChild(createContactElement('📧', email, `mailto:${email}`));
+                        hasContact = true;
+                    });
+                }
+
+                // Phones
+                if (ed.phones && ed.phones.length > 0) {
+                    ed.phones.forEach(phoneObj => {
+                        // Handle both old string format and new object format
+                        const number = typeof phoneObj === 'string' ? phoneObj : phoneObj.number;
+                        const label = (typeof phoneObj === 'object' && phoneObj.label && phoneObj.label !== 'Phone')
+                            ? ` (${phoneObj.label})`
+                            : '';
+
+                        contactList.appendChild(createContactElement('📞', `${number}${label}`, `tel:${number}`));
+                        hasContact = true;
+                    });
+                }
+
+                // Addresses
+                // First, show Instagram Address if available
+                if (data.instagram_address) {
+                    contactList.appendChild(createContactElement('📍', `${data.instagram_address} (Instagram Bio)`));
+                    hasContact = true;
+                }
+
+                // Then show unique website addresses
+                if (ed.addresses && ed.addresses.length > 0) {
+                    ed.addresses.forEach(addr => {
+                        contactList.appendChild(createContactElement('📍', `${addr} (Website Found)`));
+                        hasContact = true;
+                    });
+                }
+
+                // Facebook Data
+                if (data.facebook_data) {
+                    const fb = data.facebook_data;
+
+                    // FB Emails
+                    if (fb.emails && fb.emails.length > 0) {
+                        fb.emails.forEach(email => {
+                            // Check if already displayed (simple check)
+                            if (!ed.emails || !ed.emails.includes(email)) {
+                                contactList.appendChild(createContactElement('📧', `${email} (Facebook)`, `mailto:${email}`));
+                                hasContact = true;
+                            }
+                        });
+                    }
+
+                    // FB Phones (already merged into enriched_data phones list in backend, but let's check if we need explicit handling or if the backend merge was enough. 
+                    // The backend code: enriched_data.setdefault('phones', []).append(phone)
+                    // So they should appear in the main phone loop. 
+                    // However, the backend loop added them with label 'Facebook Page'.
+                    // So the existing phone loop should handle them correctly!
+                    // We just need to handle emails here since we didn't merge them fully in backend to avoid dupes without labels.
+                }
+            }
+
+            contactSection.style.display = hasContact ? 'block' : 'none';
+
+            // Clear previous links
+            const websiteList = document.getElementById('websiteLinks');
+            const socialList = document.getElementById('socialLinks');
+            websiteList.innerHTML = '';
+            socialList.innerHTML = '';
+
+            // Add Website Links
+            const websites = data.resolved_website_links || [];
+            if (data.external_url && !websites.includes(data.external_url) && !isLinkTree(data.external_url)) {
+                // If external URL is not a link tree and not in resolved list, add it
+                websites.unshift(data.external_url);
+            }
+
+            if (websites.length === 0) {
+                websiteList.innerHTML = '<div class="link-item" style="justify-content:center; opacity:0.5;">No website links found</div>';
+            } else {
+                websites.forEach(url => {
+                    websiteList.appendChild(createLinkElement(url));
+                });
+            }
+
+            // Add Social Links
+            const socials = data.resolved_social_links || [];
+            if (socials.length === 0) {
+                socialList.innerHTML = '<div class="link-item" style="justify-content:center; opacity:0.5;">No social links found</div>';
+            } else {
+                socials.forEach(url => {
+                    socialList.appendChild(createLinkElement(url));
+                });
+            }
+
+            results.style.display = 'block';
+        }
+
+        function createContactElement(icon, text, href) {
+            const div = document.createElement(href ? 'a' : 'div');
+            if (href) {
+                div.href = href;
+                div.className = 'link-item';
+            } else {
+                div.className = 'link-item';
+                div.style.cursor = 'default';
+                div.style.hover = 'none';
+            }
+
+            div.innerHTML = `<span class="link-icon">${icon}</span> ${text}`;
+            return div;
+        }
+
+        function createLinkElement(url) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.className = 'link-item';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+
+            // Simple icon based on domain (could be improved with actual icons)
+            let icon = '🔗';
+            if (url.includes('instagram')) icon = '📸';
+            else if (url.includes('twitter') || url.includes('x.com')) icon = '🐦';
+            else if (url.includes('facebook')) icon = '📘';
+            else if (url.includes('linkedin')) icon = '💼';
+            else if (url.includes('youtube')) icon = '▶️';
+            else if (url.includes('tiktok')) icon = '🎵';
+
+            a.innerHTML = `<span class="link-icon">${icon}</span> ${truncateUrl(url)}`;
+            return a;
+        }
+
+        function truncateUrl(url) {
+            try {
+                const domain = new URL(url).hostname.replace('www.', '');
+                const path = new URL(url).pathname;
+                return domain + (path.length > 1 ? path : '');
+            } catch {
+                return url;
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num;
+        }
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+        }
+
+        function isLinkTree(url) {
+            // Basic check, should match backend config ideally
+            return url.includes('linktr.ee') || url.includes('bio.link') || url.includes('beacons.ai');
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('handleInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                scrapeProfile();
+            }
+        });
+    </script>
+</body>
+
+</html>
