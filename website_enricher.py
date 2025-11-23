@@ -5,7 +5,8 @@ import re
 import requests
 from bs4 import BeautifulSoup, NavigableString
 from typing import Dict, List, Set, Optional
-from urllib.parse import urljoin, urlparse
+from .facebook_scraper import FacebookScraper
+from .linkedin_scraper import LinkedInScraper
 import phonenumbers
 import config
 
@@ -63,8 +64,35 @@ class WebsiteEnricher:
                         results['scraped_pages'].append(page_url)
                         self._extract_data(sub_soup, results, page_url)
             
+            # 5. Scrape Facebook page if found
+            facebook_data = None
+            facebook_url = next((link for link in results['social_links'] if 'facebook.com' in link), None)
+            if facebook_url:
+                logger.info(f"Scraping Facebook page: {facebook_url}")
+                fb_scraper = FacebookScraper()
+                facebook_data = fb_scraper.scrape_public_page(facebook_url)
+                
+                # Merge Facebook data
+                if facebook_data and facebook_data.get('email'):
+                    results['emails'].add(facebook_data['email'])
+                if facebook_data and facebook_data.get('phone'):
+                    # Add Facebook phone with a high score
+                    results['phones'].append({'number': facebook_data['phone'], 'label': 'Facebook Page', 'score': 100})
+            
+            # 6. Scrape LinkedIn page if found
+            linkedin_data = None
+            linkedin_url = next((link for link in results['social_links'] if 'linkedin.com/company' in link), None)
+            if linkedin_url:
+                logger.info(f"Scraping LinkedIn page: {linkedin_url}")
+                li_scraper = LinkedInScraper()
+                linkedin_data = li_scraper.scrape_company_page(linkedin_url)
+
             # Sort phones by score descending
             results['phones'].sort(key=lambda x: x['score'], reverse=True)
+            
+            # Add Facebook and LinkedIn data to results
+            results['facebook_data'] = facebook_data
+            results['linkedin_data'] = linkedin_data
             
             return self._format_results(results)
             

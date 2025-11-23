@@ -317,7 +317,6 @@
             <div class="spinner"></div>
             <p>Analyzing profile and resolving links...</p>
         </div>
-
         <div id="error" class="error-message"></div>
 
         <div id="results" class="results-container">
@@ -341,6 +340,34 @@
                         <span class="stat-value" id="following">0</span>
                         <span class="stat-label">Following</span>
                     </div>
+                </div>
+
+                <!-- Facebook Data -->
+                <div id="facebookData" class="hidden mt-6 p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-2 flex items-center gap-2">
+                        <i class="fab fa-facebook"></i> Facebook Page Data
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div id="fbLikes" class="text-gray-300"></div>
+                        <div id="fbFollowers" class="text-gray-300"></div>
+                        <div id="fbCheckins" class="text-gray-300"></div>
+                        <div id="fbCategory" class="text-gray-300"></div>
+                    </div>
+                    <div id="fbAbout" class="mt-2 text-gray-400 text-sm italic"></div>
+                    <div id="fbEmails" class="mt-2 text-gray-300"></div>
+                </div>
+
+                <!-- LinkedIn Data -->
+                <div id="linkedinData" class="hidden mt-6 p-4 bg-blue-800/20 rounded-lg border border-blue-400/30">
+                    <h3 class="text-lg font-semibold text-blue-300 mb-2 flex items-center gap-2">
+                        <i class="fab fa-linkedin"></i> LinkedIn Company Data
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div id="liEmployees" class="text-gray-300"></div>
+                        <div id="liFollowers" class="text-gray-300"></div>
+                        <div id="liLocation" class="text-gray-300"></div>
+                    </div>
+                    <div id="liAbout" class="mt-2 text-gray-400 text-sm italic"></div>
                 </div>
 
                 <!-- New Contact Info Section -->
