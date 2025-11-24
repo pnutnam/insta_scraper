@@ -16,6 +16,13 @@ def test_linkedin():
         print("\n✅ SUCCESS: Found employee count!")
     else:
         print("\n❌ FAILURE: Could not find employee count.")
+        
+    if data.get('industry'):
+        print(f"✅ Found Industry: {data['industry']}")
+    if data.get('type'):
+        print(f"✅ Found Type: {data['type']}")
+    if data.get('specialties'):
+        print(f"✅ Found Specialties: {data['specialties']}")
 
 if __name__ == "__main__":
     test_linkedin()

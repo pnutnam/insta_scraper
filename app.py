@@ -28,10 +28,11 @@ def scrape():
     try:
         # Initialize scraper (using public access for now)
         # In a real app, you might want to manage sessions or use a pool of workers
-        scraper = InstagramScraper()
+        # Initialize scraper with authenticated credentials for testing
+        scraper = InstagramScraper(username="pnutnam2@gmail.com", password="EQU1yfz7cyn.gbn*ejk")
         
-        # Login if credentials are in config (optional)
-        # scraper.login() 
+        # Login to bypass IP blocks (required for testing environment)
+        scraper.login() 
         
         logger.info(f"Received scrape request for: {handle}")
         profile_info = scraper.get_profile_info(handle)

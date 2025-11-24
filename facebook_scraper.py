@@ -7,14 +7,15 @@ from typing import Dict, Optional
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+from driver_utils import get_driver
 import config
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class FacebookScraper:
@@ -23,19 +24,9 @@ class FacebookScraper:
     def __init__(self):
         self.email_regex = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
 
-    def _setup_driver(self):
+    def _get_driver(self):
         """Setup headless Chrome driver."""
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--window-size=1920,1080")
-        # User agent to look like a real browser
-        chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-        
-        service = Service(ChromeDriverManager().install())
-        return webdriver.Chrome(service=service, options=chrome_options)
+        return get_driver()
 
     def scrape_page(self, url: str) -> Dict:
         """
@@ -59,18 +50,19 @@ class FacebookScraper:
         driver = None
         try:
             logger.info(f"Scraping Facebook page with Selenium: {url}")
-            driver = self._setup_driver()
+            driver = self._get_driver()
             driver.get(url)
             
             # Wait for page to load
-            time.sleep(3)
+            time.sleep(5)
             
             # Handle Login Popup
             self._dismiss_login_popup(driver)
             
-            # Scroll down a bit to trigger lazy loading
-            driver.execute_script("window.scrollTo(0, 500);")
-            time.sleep(2)
+            # Scroll down to trigger lazy loading
+            for _ in range(3):
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(2)
             
             # Get page source
             page_source = driver.page_source
@@ -83,6 +75,13 @@ class FacebookScraper:
                 if len(email) < 50 and not email.endswith(('.png', '.jpg', '.jpeg', '.gif')):
                     results['emails'].add(email.lower())
             
+            # Check mailto links
+            for a in soup.find_all('a', href=True):
+                if 'mailto:' in a['href']:
+                    email = a['href'].replace('mailto:', '').split('?')[0]
+                    if self.email_regex.match(email):
+                        results['emails'].add(email.lower())
+
             # Check meta tags
             meta_email = soup.find('meta', property='og:email')
             if meta_email and meta_email.get('content'):

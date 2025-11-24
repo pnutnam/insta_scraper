@@ -42,3 +42,5 @@ OUTPUT_JSON = 'customer_ledger.json'
 
 # User agent for requests
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+GOOGLE_API_KEY = "AIzaSyA9S1JKOJ_nRkvi6MXIJHAoHPoSXCmqxEs"
+GOOGLE_SEARCH_CX = "47e7b23cf62074c27"

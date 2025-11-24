@@ -3,15 +3,11 @@ import time
 import re
 from typing import Dict, Optional, List
 from urllib.parse import urlparse
+from bs4 import BeautifulSoup
 
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
+from driver_utils import get_driver
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -19,16 +15,10 @@ logger = logging.getLogger(__name__)
 
 class LinkedInScraper:
     def __init__(self):
-        self.options = Options()
-        self.options.add_argument("--headless")
-        self.options.add_argument("--no-sandbox")
-        self.options.add_argument("--disable-dev-shm-usage")
-        self.options.add_argument("--disable-gpu")
-        self.options.add_argument("--window-size=1920,1080")
-        self.options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        pass
         
     def _get_driver(self):
-        return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=self.options)
+        return get_driver()
 
     def scrape_company_page(self, url: str) -> Dict[str, str]:
         """

@@ -5,8 +5,9 @@ import re
 import requests
 from bs4 import BeautifulSoup, NavigableString
 from typing import Dict, List, Set, Optional
-from .facebook_scraper import FacebookScraper
-from .linkedin_scraper import LinkedInScraper
+from urllib.parse import urljoin, urlparse
+from facebook_scraper import FacebookScraper
+from linkedin_scraper import LinkedInScraper
 import phonenumbers
 import config
 
@@ -54,6 +55,20 @@ class WebsiteEnricher:
             results['scraped_pages'].append(url)
             self._extract_data(soup, results, url)
             
+            # Fallback: If no social links or emails found, and not root domain, try root domain
+            if not results['social_links'] and not results['emails']:
+                parsed = urlparse(url)
+                root_url = f"{parsed.scheme}://{parsed.netloc}"
+                if url.rstrip('/') != root_url.rstrip('/'):
+                    logger.info(f"No results from {url}, attempting fallback to root: {root_url}")
+                    root_soup = self._scrape_page(root_url)
+                    if root_soup:
+                        results['scraped_pages'].append(root_url)
+                        self._extract_data(root_soup, results, root_url)
+                        # Update soup to root soup for secondary page discovery
+                        soup = root_soup
+                        url = root_url
+            
             # 2. Find and Scrape Secondary Pages (Contact/About)
             secondary_pages = self._find_secondary_pages(soup, url)
             for page_url in secondary_pages:
@@ -70,7 +85,7 @@ class WebsiteEnricher:
             if facebook_url:
                 logger.info(f"Scraping Facebook page: {facebook_url}")
                 fb_scraper = FacebookScraper()
-                facebook_data = fb_scraper.scrape_public_page(facebook_url)
+                facebook_data = fb_scraper.scrape_page(facebook_url)
                 
                 # Merge Facebook data
                 if facebook_data and facebook_data.get('email'):
@@ -104,7 +119,15 @@ class WebsiteEnricher:
         """Fetch and parse a page."""
         try:
             response = requests.get(url, headers=self.headers, timeout=config.REQUEST_TIMEOUT)
-            response.raise_for_status()
+            
+            # Handle "soft 404s" - some sites return 404 but still have valid content (headers/footers)
+            if response.status_code >= 400:
+                if len(response.text) > 500:
+                    logger.warning(f"Got status {response.status_code} for {url} but content length is {len(response.text)}. Proceeding as soft 404.")
+                else:
+                    logger.warning(f"Failed to fetch {url}: Status {response.status_code}")
+                    return None
+            
             return BeautifulSoup(response.text, 'html.parser')
         except Exception as e:
             logger.warning(f"Failed to fetch {url}: {e}")
