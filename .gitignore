@@ -24,3 +24,12 @@ config.py
 # OS
 .DS_Store
 Thumbs.db
+
+# Output
+*.json
+*.csv
+
+# Debug
+*_debug.png
+*_debug_*.png
+google_source.html
