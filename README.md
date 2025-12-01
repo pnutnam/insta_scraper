@@ -17,6 +17,17 @@ A robust, multi-source scraping tool designed to extract comprehensive business 
   - Conditional Facebook scraping (only attempts login if contact info is missing).
   - Robust error handling and logging.
 
+## 💻 Technologies & APIs Used
+
+This project leverages a hybrid scraping approach, combining official APIs with robust headless browsing to ensure maximum data yield and reliability.
+
+- **[Instaloader](https://instaloader.github.io/)**: Used for interacting with Instagram's internal API to retrieve profile metadata, bio information, and follower counts without requiring a full browser session.
+- **[Selenium](https://www.selenium.dev/)**: Powers the headless browser automation for scraping dynamic content from LinkedIn and Facebook, handling JavaScript rendering and login flows.
+- **[Google Custom Search JSON API](https://developers.google.com/custom-search/v1/overview)**: Utilized as a high-precision fallback mechanism to discover LinkedIn company pages when they are not directly linked in the Instagram bio.
+- **[BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/)**: Employed for efficient parsing of HTML content from static pages and rendered DOMs to extract text, links, and specific data points.
+- **[Requests](https://requests.readthedocs.io/)**: Handles lightweight HTTP requests for API calls and static page retrieval where full browser automation is unnecessary.
+- **Parallel Execution**: The `concurrent.futures` module is used to multithread the website enrichment process, allowing multiple external links to be crawled simultaneously.
+
 ## 🛠️ Installation
 
 1. **Clone the repository**:
