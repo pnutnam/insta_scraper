@@ -11,8 +11,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Hardcoded credentials
-INSTAGRAM_USERNAME = "pnutnam2@gmail.com"
-INSTAGRAM_PASSWORD = "EQU1yfz7cyn.gbn*ejk"
+INSTAGRAM_USERNAME = "USERNAME"
+INSTAGRAM_PASSWORD = "PASSWORD"
 
 def scrape_instagram_profile_v2(handle: str, output_file: str = None):
     """
